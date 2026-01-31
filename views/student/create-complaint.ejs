@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include('../partials/head') %>
+</head>
+
+<body>
+    <%- include('../partials/header') %>
+
+        <main>
+            <div class="container" style="padding: 40px 15px; max-width: 800px;">
+                <h1>File a New Complaint</h1>
+                <p style="color: #666; margin-bottom: 30px;">Please provide details about the issue. Upload photos if
+                    available.</p>
+
+                <div class="card">
+                    <form action="/student/create-complaint" method="POST" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="title">Complaint Title</label>
+                            <input type="text" id="title" name="title" class="form-control"
+                                placeholder="e.g. WiFi Broken in Room 201" required>
+                        </div>
+
+                        <div class="row" style="display: flex; gap: 20px;">
+                            <div class="form-group" style="flex: 1;">
+                                <label for="category">Category</label>
+                                <select id="category" name="category" class="form-control" required>
+                                    <option value="">Select Category</option>
+                                    <option value="infrastructure">Infrastructure</option>
+                                    <option value="academic">Academic</option>
+                                    <option value="hostel">Hostel</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label for="urgency">Urgency</label>
+                                <select id="urgency" name="urgency" class="form-control" required>
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea id="description" name="description" class="form-control" rows="5"
+                                placeholder="Describe the issue in detail..." required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="image">Upload Evidence (Optional)</label>
+                            <input type="file" id="image" name="image" class="form-control" accept="image/*">
+                        </div>
+
+                        <div style="margin-top: 30px; display: flex; gap: 10px;">
+                            <button type="submit" class="btn btn-primary">Submit Complaint</button>
+                            <a href="/student/dashboard" class="btn btn-outline"
+                                style="border: 1px solid #dee2e6; color: #666;">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+
+                <style>
+                    .card {
+                        background: white;
+                        border: 1px solid #dee2e6;
+                        border-radius: 4px;
+                        padding: 30px;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+                    }
+
+                    .form-group {
+                        margin-bottom: 20px;
+                    }
+
+                    .form-group label {
+                        display: block;
+                        margin-bottom: 8px;
+                        font-weight: 500;
+                    }
+
+                    .form-control {
+                        width: 100%;
+                        padding: 10px;
+                        border: 1px solid #ced4da;
+                        border-radius: 4px;
+                        font-size: 1rem;
+                    }
+
+                    .form-control:focus {
+                        border-color: var(--color-primary);
+                        outline: none;
+                    }
+                </style>
+            </div>
+        </main>
+
+        <%- include('../partials/footer') %>
+            <%- include('../partials/scripts') %>
+</body>
+
+</html>

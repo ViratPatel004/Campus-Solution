@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include('../partials/head', { title: 'Admin Login' }) %>
+</head>
+
+<body>
+    <%- include('../partials/header') %>
+
+        <main>
+            <section class="auth-section">
+                <div class="auth-card">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <i class="fa-solid fa-user-shield" style="font-size: 3rem; color: #343a40;"></i>
+                    </div>
+                    <h2>Admin Login</h2>
+                    <p style="margin-bottom: 20px; color: #666; text-align: center;">Secure Access for Staff &
+                        Administrators</p>
+
+                    <form id="loginForm" action="/login-action" method="POST">
+                        <div class="form-group">
+                            <label for="email">Admin Email</label>
+                            <input type="email" id="email" name="email" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <div style="position: relative;">
+                                <input type="password" id="password" name="password" class="form-control" required
+                                    style="padding-right: 40px;">
+                                <span id="togglePassword"
+                                    style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #666;">
+                                    <i class="fa-solid fa-eye"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <!-- CHANGED: Use btn-primary instead of btn-dark and removing custom style -->
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Admin Sign In</button>
+                    </form>
+
+                    <div style="margin-top: 15px; text-align: center; font-size: 0.9rem;">
+                        <p style="color: #666;">Or</p>
+                        <button class="btn btn-outline" id="googleLoginBtn"
+                            style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                            <i class="fa-brands fa-google"></i> Continue with Google
+                        </button>
+                        <div id="error-message"
+                            style="display: none; color: #dc3545; background: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; border-radius: 4px; margin-top: 15px; font-size: 0.9rem;">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <script type="module">
+                import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+                import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+                const firebaseConfig = {
+                    apiKey: "AIzaSyCTLVqkYL0Nh0aV1g5CFrreIS5meyu82O8",
+                    authDomain: "campussolutions-f794a.firebaseapp.com",
+                    projectId: "campussolutions-f794a",
+                    storageBucket: "campussolutions-f794a.firebasestorage.app",
+                    messagingSenderId: "41164488531",
+                    appId: "1:41164488531:web:d9fbe03f69660ade552ba6",
+                    measurementId: "G-13W0XX9LVP"
+                };
+
+                // Initialize Firebase
+                let auth;
+                try {
+                    const app = initializeApp(firebaseConfig);
+                    auth = getAuth(app);
+                } catch (e) {
+                    showError("Firebase Init Error: " + e.message);
+                }
+
+                const googleProvider = new GoogleAuthProvider();
+                const loginForm = document.getElementById('loginForm');
+                const googleBtn = document.getElementById('googleLoginBtn');
+
+                function showError(msg) {
+                    const errDiv = document.getElementById('error-message');
+                    errDiv.textContent = msg;
+                    errDiv.style.display = 'block';
+                }
+
+                if (loginForm) {
+                    loginForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const email = loginForm.email.value;
+                        const password = loginForm.password.value;
+
+                        try {
+                            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                            const token = await userCredential.user.getIdToken();
+                            handleServerSession(token);
+                        } catch (error) {
+                            showError("Login Failed: " + error.message);
+                        }
+                    });
+                }
+
+                if (googleBtn) {
+                    googleBtn.addEventListener('click', async () => {
+                        try {
+                            const result = await signInWithPopup(auth, googleProvider);
+                            const token = await result.user.getIdToken();
+                            handleServerSession(token);
+                        } catch (error) {
+                            showError("Google Login Failed: " + error.message);
+                        }
+                    });
+                }
+
+                async function handleServerSession(token) {
+                    document.cookie = "authToken=" + token + "; path=/";
+                    // Redirect SPECIFICALLY to Admin Dashboard
+                    window.location.href = "/admin/dashboard";
+                }
+
+                // Password Toggle Script
+                const togglePassword = document.querySelector('#togglePassword');
+                const password = document.querySelector('#password');
+                if (togglePassword && password) {
+                    togglePassword.addEventListener('click', function (e) {
+                        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                        password.setAttribute('type', type);
+                        this.querySelector('i').classList.toggle('fa-eye');
+                        this.querySelector('i').classList.toggle('fa-eye-slash');
+                    });
+                }
+            </script>
+
+            <style>
+                .auth-section {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    min-height: 80vh;
+                    background-color: #f8f9fa;
+                    /* Changed back to light background */
+                }
+
+                .auth-card {
+                    background: white;
+                    padding: 2rem;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+                    width: 100%;
+                    max-width: 400px;
+                    border: 1px solid #dee2e6;
+                }
+
+                /* REMOVED admin-auth-card top border class */
+
+                .form-group {
+                    margin-bottom: 1rem;
+                }
+
+                .form-group label {
+                    display: block;
+                    margin-bottom: 0.5rem;
+                    font-weight: 500;
+                }
+
+                .form-control {
+                    width: 100%;
+                    padding: 0.5rem 0.75rem;
+                    font-size: 1rem;
+                    border: 1px solid #ced4da;
+                    border-radius: 4px;
+                }
+
+                .form-control:focus {
+                    border-color: var(--color-primary);
+                    outline: none;
+                }
+            </style>
+        </main>
+
+        <%- include('../partials/footer') %>
+            <%- include('../partials/scripts') %>
+</body>
+
+</html>

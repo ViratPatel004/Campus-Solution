@@ -1,0 +1,5 @@
+/* Additional custom styles can go here */
+.gradient-bg {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+}

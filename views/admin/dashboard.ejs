@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include('../partials/head') %>
+</head>
+
+<body>
+    <%- include('../partials/header') %>
+
+        <main>
+            <div class="container" style="padding: 40px 15px;">
+                <div class="dashboard-header"
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                    <h1>Admin Dashboard (Active Complaints)</h1>
+                    <div class="controls">
+                        <span class="badge badge-info">
+                            <%= complaints.length %> Active Issues
+                        </span>
+                    </div>
+                </div>
+
+
+                <!-- CATEGORY STATS / FILTERS -->
+                <div style="display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap;">
+                    <% if (stats && Object.keys(stats).length> 0) { %>
+                        <% Object.keys(stats).forEach(cat=> {
+                            const isSelected = (typeof selectedCategory !== 'undefined' && selectedCategory === cat);
+                            %>
+                            <a href="/admin/dashboard?category=<%= cat %>"
+                                style="text-decoration: none; flex: 1; min-width: 150px;">
+                                <div class="card"
+                                    style="padding: 15px; text-align: center; border-top: 4px solid var(--color-primary); background: <%= isSelected ? '#e3f2fd' : 'white' %>; border: <%= isSelected ? '2px solid var(--color-primary)' : '1px solid #dee2e6' %>;">
+                                    <h4 style="margin: 0 0 10px; color: #666;">
+                                        <%= cat %>
+                                    </h4>
+                                    <span style="font-size: 1.5rem; font-weight: bold; color: #333;">
+                                        <%= stats[cat] %>
+                                    </span>
+                                </div>
+                            </a>
+                            <% }) %>
+                                <% } else { %>
+                                    <div class="card"
+                                        style="padding: 15px; width: 100%; text-align: center; color: #666;">
+                                        No active complaints to categorize.
+                                    </div>
+                                    <% } %>
+                </div>
+
+                <% if (typeof selectedCategory !=='undefined' && selectedCategory) { %>
+                    <div
+                        style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;">
+                        <h3 style="margin: 0;">Showing: <span style="color: var(--color-primary);">
+                                <%= selectedCategory %>
+                            </span></h3>
+                        <a href="/admin/dashboard" class="btn btn-outline"
+                            style="border-color: #dc3545; color: #dc3545;">❌ Clear Filter</a>
+                    </div>
+                    <% } %>
+
+                        <!-- Active Complaints Table -->
+                        <div class="card" style="padding: 0; overflow: hidden; margin-bottom: 50px;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead style="background: #343a40; color: white;">
+                                    <tr>
+                                        <th style="padding: 12px 15px;">Student</th>
+                                        <th style="padding: 12px 15px;">Complaint</th>
+                                        <th style="padding: 12px 15px;">Category</th>
+                                        <th style="padding: 12px 15px;">Urgency</th>
+                                        <th style="padding: 12px 15px;">Status</th>
+                                        <th style="padding: 12px 15px;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (complaints.length===0) { %>
+                                        <tr>
+                                            <td colspan="6" style="text-align: center; padding: 20px;">No active
+                                                complaints! 🎉</td>
+                                        </tr>
+                                        <% } %>
+
+                                            <% complaints.forEach(c=> { %>
+                                                <tr>
+                                                    <td style="padding: 12px 15px; border-bottom: 1px solid #dee2e6;">
+                                                        <strong>
+                                                            <%= c.studentName || 'Student' %>
+                                                        </strong><br>
+                                                        <span style="font-size: 0.8rem; color: #666;">ID: <%=
+                                                                c.studentId.slice(0,5) %>...</span>
+                                                    </td>
+                                                    <td style="padding: 12px 15px; border-bottom: 1px solid #dee2e6;">
+                                                        <strong>
+                                                            <%= c.title %>
+                                                        </strong>
+                                                        <p style="font-size: 0.9rem; color: #555; margin: 5px 0;">
+                                                            <%= c.description %>
+                                                        </p>
+                                                        <% if(c.imageUrl) { %>
+                                                            <a href="<%= c.imageUrl %>" target="_blank"
+                                                                style="font-size: 0.8rem; color: #007bff;">View
+                                                                Evidence
+                                                                📎</a>
+                                                            <% } %>
+                                                    </td>
+                                                    <td style="padding: 12px 15px; border-bottom: 1px solid #dee2e6;">
+                                                        <%= c.category %>
+                                                    </td>
+                                                    <td style="padding: 12px 15px; border-bottom: 1px solid #dee2e6;">
+                                                        <span class="badge badge-<%= c.urgency %>">
+                                                            <%= c.urgency %>
+                                                        </span>
+                                                    </td>
+                                                    <td style="padding: 12px 15px; border-bottom: 1px solid #dee2e6;">
+                                                        <%= c.status %>
+                                                    </td>
+                                                    <td style="padding: 12px 15px; border-bottom: 1px solid #dee2e6;">
+                                                        <form action="/admin/update-status" method="POST"
+                                                            style="display: flex; gap: 5px;">
+                                                            <input type="hidden" name="complaintId" value="<%= c.id %>">
+
+                                                            <% if (c.status !=='in-progress' ) { %>
+                                                                <button name="status" value="in-progress" class="btn-sm"
+                                                                    style="background: #17a2b8; color: white; border: none;">Accept</button>
+                                                                <% } %>
+
+                                                                    <button name="status" value="resolved"
+                                                                        class="btn-sm"
+                                                                        style="background: #28a745; color: white; border: none;">Resolve
+                                                                        ✅</button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                                <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Resolution History -->
+                        <h3>Resolution History (<%= history.length %>)</h3>
+                        <div class="card" style="padding: 0; overflow: hidden; opacity: 0.8;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead style="background: #e9ecef;">
+                                    <tr>
+                                        <th style="padding: 10px;">Title</th>
+                                        <th style="padding: 10px;">Resolved At</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% history.forEach(h=> { %>
+                                        <tr>
+                                            <td style="padding: 10px; border-bottom: 1px solid #dee2e6;">
+                                                <%= h.title %>
+                                            </td>
+                                            <td style="padding: 10px; border-bottom: 1px solid #dee2e6; color: green;">
+                                                Resolved</td>
+                                        </tr>
+                                        <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <style>
+                            .card {
+                                background: white;
+                                border: 1px solid #dee2e6;
+                                border-radius: 4px;
+                                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+                            }
+
+                            .badge {
+                                padding: 4px 8px;
+                                border-radius: 4px;
+                                font-size: 0.8rem;
+                                font-weight: 600;
+                                color: white;
+                            }
+
+                            .badge-high {
+                                background: #dc3545;
+                            }
+
+                            .badge-medium {
+                                background: #ffc107;
+                                color: #212529;
+                            }
+
+                            .badge-low {
+                                background: #17a2b8;
+                            }
+
+                            .badge-info {
+                                background: #007bff;
+                            }
+
+                            .btn-sm {
+                                padding: 5px 10px;
+                                border-radius: 4px;
+                                cursor: pointer;
+                            }
+                        </style>
+            </div>
+        </main>
+
+        <%- include('../partials/footer') %>
+            <%- include('../partials/scripts') %>
+</body>
+
+</html>

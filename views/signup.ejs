@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include('partials/head', { title: 'Student Registration' }) %>
+</head>
+
+<body>
+    <%- include('partials/header') %>
+
+        <main>
+            <section class="auth-section">
+                <div class="auth-card" style="max-width: 500px;">
+                    <h2>Create Account</h2>
+                    <p style="margin-bottom: 20px; color: #666; text-align: center;">Register and verify your student
+                        identity.</p>
+
+                    <form id="signupForm">
+                        <div class="form-group">
+                            <label for="name">Full Name</label>
+                            <input type="text" id="name" name="name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Student Email</label>
+                            <input type="email" id="email" name="email" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <div style="position: relative;">
+                                <input type="password" id="password" name="password" class="form-control" required
+                                    minlength="6" style="padding-right: 40px;">
+                                <span id="togglePassword"
+                                    style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #666;">
+                                    <i class="fa-solid fa-eye"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="idCard">Upload ID Card (Image)</label>
+                            <input type="file" id="idCard" name="idCard" class="form-control" accept="image/*" required>
+                            <small style="color: #666;">Required for verification.</small>
+                        </div>
+
+                        <div style="margin-top: 20px;">
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">Register & Upload
+                                ID</button>
+                        </div>
+                    </form>
+
+                    <div style="margin-top: 15px; text-align: center;">
+                        <p>Already have an account? <a href="/student/login">Login here</a></p>
+                        <div id="status-message"
+                            style="display: none; padding: 10px; border-radius: 4px; margin-top: 15px; font-size: 0.9rem;">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <script type="module">
+                import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+                import { getAuth, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+                const firebaseConfig = {
+                    apiKey: "AIzaSyCTLVqkYL0Nh0aV1g5CFrreIS5meyu82O8",
+                    authDomain: "campussolutions-f794a.firebaseapp.com",
+                    projectId: "campussolutions-f794a",
+                    storageBucket: "campussolutions-f794a.firebasestorage.app",
+                    messagingSenderId: "41164488531",
+                    appId: "1:41164488531:web:d9fbe03f69660ade552ba6"
+                };
+
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                const form = document.getElementById('signupForm');
+                const statusDiv = document.getElementById('status-message');
+
+                function showStatus(msg, type) {
+                    statusDiv.textContent = msg;
+                    statusDiv.style.display = 'block';
+                    if (type === 'error') {
+                        statusDiv.style.color = '#721c24';
+                        statusDiv.style.backgroundColor = '#f8d7da';
+                        statusDiv.style.border = '1px solid #f5c6cb';
+                    } else {
+                        statusDiv.style.color = '#155724';
+                        statusDiv.style.backgroundColor = '#d4edda';
+                        statusDiv.style.border = '1px solid #c3e6cb';
+                    }
+                }
+
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    showStatus("Creating account...", 'info');
+
+                    const name = form.name.value;
+                    const email = form.email.value;
+                    const password = form.password.value;
+                    const idFile = form.idCard.files[0];
+
+                    if (!idFile) {
+                        showStatus("Please upload your ID card.", 'error');
+                        return;
+                    }
+
+                    try {
+                        // 1. Create User in Firebase Auth
+                        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                        const user = userCredential.user;
+
+                        // 2. Update Profile Name
+                        await updateProfile(user, { displayName: name });
+
+                        showStatus("Account created! Uploading ID Card...", 'info');
+
+                        // 3. Get Token
+                        const token = await user.getIdToken();
+
+                        // 4. Send Data to Backend
+                        const formData = new FormData();
+                        formData.append('idCard', idFile);
+                        formData.append('name', name);
+                        formData.append('token', token); // Send token to verify identity on backend
+
+                        const response = await fetch('/api/signup-complete', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        if (response.ok) {
+                            showStatus("Registration successful! Redirecting...", 'success');
+                            document.cookie = "authToken=" + token + "; path=/";
+                            setTimeout(() => {
+                                window.location.href = "/student/dashboard";
+                            }, 1500);
+                        } else {
+                            const errText = await response.text();
+                            throw new Error(errText);
+                        }
+
+                    } catch (error) {
+                        console.error(error);
+                        if (error.code === 'auth/email-already-in-use') {
+                            statusDiv.innerHTML = 'This email is already registered. <a href="/student/login">Login here</a>';
+                            statusDiv.style.display = 'block';
+                            statusDiv.style.color = '#721c24';
+                            statusDiv.style.backgroundColor = '#f8d7da';
+                            statusDiv.style.border = '1px solid #f5c6cb';
+                        } else {
+                            showStatus("Registration Failed: " + error.message, 'error');
+                        }
+                    }
+                });
+
+                // Password Toggle Script
+                const togglePassword = document.querySelector('#togglePassword');
+                const passwordInput = document.querySelector('#password');
+                if (togglePassword && passwordInput) {
+                    togglePassword.addEventListener('click', function (e) {
+                        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                        passwordInput.setAttribute('type', type);
+                        this.querySelector('i').classList.toggle('fa-eye');
+                        this.querySelector('i').classList.toggle('fa-eye-slash');
+                    });
+                }
+            </script>
+
+            <style>
+                .auth-section {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    min-height: 80vh;
+                    background-color: #f8f9fa;
+                }
+
+                .auth-card {
+                    background: white;
+                    padding: 2rem;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+                    width: 100%;
+                    border: 1px solid #dee2e6;
+                }
+
+                .form-group {
+                    margin-bottom: 1rem;
+                }
+
+                .form-group label {
+                    display: block;
+                    margin-bottom: 0.5rem;
+                    font-weight: 500;
+                }
+
+                .form-control {
+                    width: 100%;
+                    padding: 0.5rem 0.75rem;
+                    border: 1px solid #ced4da;
+                    border-radius: 4px;
+                }
+            </style>
+        </main>
+
+        <%- include('partials/footer') %>
+            <%- include('partials/scripts') %>
+</body>
+
+</html>

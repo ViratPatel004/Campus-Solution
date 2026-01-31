@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include('partials/head') %>
+</head>
+
+<body>
+    <%- include('partials/header') %>
+
+        <main>
+            <section class="hero-section">
+                <div class="container hero-content">
+                    <div class="hero-text">
+                        <h1>CampusSolutions: Smart Complaints.</h1>
+                        <p style="font-size: 1.1rem; color: #666; margin-bottom: 20px;">
+                            CampusSolutions acts as a digital bridge between students and administration. Track
+                            complaints,
+                            visualize progress, and ensure accountability.
+                        </p>
+                        <div class="hero-actions">
+                            <a href="/student/login" class="btn btn-primary">File a Complaint</a>
+                            <a href="#features" class="btn btn-outline" style="margin-left: 10px;">Explore Features</a>
+                        </div>
+                    </div>
+                    <div class="hero-visual">
+                        <div class="simple-card">
+                            <h3>System Status</h3>
+                            <div class="stat-row">
+                                <span>Resolution Rate:</span>
+                                <strong>98%</strong>
+                            </div>
+                            <div class="stat-row">
+                                <span>Avg Response:</span>
+                                <strong>2hrs</strong>
+                            </div>
+                            <div
+                                style="margin-top: 20px; text-align: center; color: #888; background: #eee; padding: 20px;">
+                                [Dashboard Preview]
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <style>
+                .hero-section {
+                    padding: 80px 0;
+                    background-color: white;
+                }
+
+                .hero-content {
+                    display: flex;
+                    flex-wrap: wrap;
+                    align-items: center;
+                    justify-content: space-between;
+                }
+
+                .hero-text {
+                    flex: 1;
+                    min-width: 300px;
+                    padding-right: 20px;
+                }
+
+                .hero-text h1 {
+                    font-size: 2.5rem;
+                    margin-bottom: 1rem;
+                    color: #333;
+                }
+
+                .hero-visual {
+                    flex: 1;
+                    min-width: 300px;
+                    display: flex;
+                    justify-content: center;
+                }
+
+                .simple-card {
+                    background: #fff;
+                    border: 1px solid #dee2e6;
+                    padding: 20px;
+                    width: 100%;
+                    max-width: 400px;
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+                }
+
+                .stat-row {
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 10px 0;
+                    border-bottom: 1px solid #eee;
+                }
+            </style>
+        </main>
+
+        <%- include('partials/footer') %>
+            <%- include('partials/scripts') %>
+</body>
+
+</html>

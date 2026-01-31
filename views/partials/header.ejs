@@ -1,0 +1,81 @@
+<header class="main-header">
+    <div class="container header-content">
+        <a href="/" class="logo">
+            CampusSolutions
+        </a>
+        <nav class="main-nav">
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/about">About</a></li>
+                <li><a href="/contact">Contact</a></li>
+            </ul>
+        </nav>
+        <div class="auth-buttons">
+            <% if (typeof user !=='undefined' && user) { %>
+                <span style="margin-right: 15px; color: #555; font-weight: 500;">Hello, <%= user.name %></span>
+                <a href="/logout" class="btn btn-outline">Logout</a>
+                <% } else { %>
+                    <a href="/admin/login" class="btn btn-outline" style="margin-right: 10px;">Admin Login</a>
+                    <a href="/student/login" class="btn btn-primary">Student Portal</a>
+                    <% } %>
+        </div>
+    </div>
+</header>
+
+<style>
+    .main-header {
+        background-color: #ffffff;
+        border-bottom: 1px solid #dee2e6;
+        padding: 1rem 0;
+        width: 100%;
+        /* Removed fixed positioning for simpler flow, or keep sticky */
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    .header-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .logo {
+        font-weight: 600;
+        font-size: 1.25rem;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .logo:hover {
+        text-decoration: none;
+    }
+
+    .logo-icon {
+        color: var(--color-primary);
+    }
+
+    .main-nav ul {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 0;
+    }
+
+    .main-nav a {
+        color: #555;
+        font-size: 1rem;
+    }
+
+    .main-nav a:hover {
+        color: var(--color-primary);
+        text-decoration: none;
+    }
+
+    .auth-buttons {
+        display: flex;
+        align-items: center;
+    }
+</style>
