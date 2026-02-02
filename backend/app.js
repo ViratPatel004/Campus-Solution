@@ -4,14 +4,24 @@ const cors = require('cors');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const admin = require('firebase-admin');
-const serviceAccount = require('./serviceAccountKey.json');
+// const serviceAccount = require('./serviceAccountKey.json'); // Removed strict dependency
 const multer = require('multer');
 
 
 dotenv.config();
 
+let serviceAccount;
+try {
+  serviceAccount = require('./serviceAccountKey.json');
+} catch (err) {
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+  } else {
+    console.error("Firebase credentials missing! Set FIREBASE_SERVICE_ACCOUNT env var or provide serviceAccountKey.json");
+  }
+}
 
-if (!admin.apps.length) {
+if (!admin.apps.length && serviceAccount) {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
     storageBucket: process.env.FIREBASE_STORAGE_BUCKET
@@ -27,11 +37,11 @@ app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../frontend/public')));
 
 
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', path.join(__dirname, '../frontend/views'));
 
 
 const { checkAuth, checkAdmin } = require('./middleware/authMiddleware');
@@ -289,6 +299,10 @@ app.post('/admin/update-status', checkAuth, checkAdmin, async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
